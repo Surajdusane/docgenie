@@ -3,4 +3,5 @@ docxtpl
 fastapi
 uvicorn
 python-multipart
-docx2pdf
+docx2txt
+fpdf
