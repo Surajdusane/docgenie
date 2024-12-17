@@ -25,13 +25,13 @@ def process_folder_and_create_zip(folder_path):
         pdf_folder.mkdir()
 
     # Iterate over all DOCX files in the folder and convert them to PDF
-    for docx_file in folder_path.glob("*.docx"):
-        pdf_file = pdf_folder / (docx_file.stem + ".pdf")
-        convert_docx_to_pdf(docx_file, pdf_file)
+    # for docx_file in folder_path.glob("*.docx"):
+    #     pdf_file = pdf_folder / (docx_file.stem + ".pdf")
+    #     convert_docx_to_pdf(docx_file, pdf_file)
 
     # Create a zip file containing all the converted PDFs
-    zip_file_path = folder_path / "pdfs.zip"
-    create_zip_from_pdfs(pdf_folder, zip_file_path)
+    zip_file_path = folder_path 
+    create_zip_from_pdfs(folder_path, zip_file_path)
 
     # Clean up by deleting the folder with individual PDFs
     for pdf_file in pdf_folder.glob("*.pdf"):
