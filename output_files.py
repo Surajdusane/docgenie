@@ -54,42 +54,31 @@ def create_zip_from_pdfs(pdf_folder, zip_path):
         print(f"Error creating ZIP file: {e}")
         return False
 
+from pathlib import Path
+from zipfile import ZipFile
+
 def process_folder_and_create_zip(folder_path):
-    """Process DOCX files in a folder, convert them to PDFs, and zip the PDFs."""
+    """Process DOCX files in a folder and create a ZIP file containing them."""
     folder_path = Path(folder_path)
-    # pdf_folder = folder_path / "converted_pdfs"
-    
-    # # Ensure the PDFs folder exists
-    # if not pdf_folder.exists():
-    #     pdf_folder.mkdir()
 
-    # # Step 1: Iterate over all DOCX files in the folder and convert them to PDFs
-    # pdf_files = []
-    # for docx_file in folder_path.glob("*.docx"):
-    #     pdf_file = pdf_folder / (docx_file.stem + ".pdf")
-    #     if convert_docx_to_pdf(docx_file, pdf_file):
-    #         pdf_files.append(pdf_file)
-
-    # # If no PDFs were generated, exit early
-    # if not pdf_files:
-    #     print("No PDFs were generated. Exiting...")
-    #     return None
-
-    # Step 2: Create a ZIP file containing all the converted PDFs
-    zip_file_path = folder_path / "converted_pdfs.zip"
-    if create_zip_from_pdfs(folder_path, zip_file_path):
-        # Step 3: Clean up by deleting the folder with individual PDFs after zipping
-        try:
-            for pdf_file in folder_path.glob("*.pdf"):
-                pdf_file.unlink()  # Remove each PDF file
-            folder_path.rmdir()  # Remove the empty folder
-            print(f"Cleaned up the PDFs folder: {folder_path}")
-        except Exception as e:
-            print(f"Error cleaning up the PDFs folder: {e}")
-        return zip_file_path
-    else:
-        print(f"Failed to create ZIP file at {zip_file_path}")
+    # Step 1: Collect all DOCX files in the folder
+    docx_files = list(folder_path.glob("*.docx"))
+    if not docx_files:
+        print("No DOCX files found in the folder. Exiting...")
         return None
+
+    # Step 2: Create a ZIP file containing all the DOCX files
+    zip_file_path = folder_path / "docx_files.zip"
+    try:
+        with ZipFile(zip_file_path, 'w') as zipf:
+            for docx_file in docx_files:
+                zipf.write(docx_file, arcname=docx_file.name)
+        print(f"ZIP file created at: {zip_file_path}")
+        return zip_file_path
+    except Exception as e:
+        print(f"Failed to create ZIP file: {e}")
+        return None
+
 
 # # Example usage:
 # folder_path = "/path/to/your/folder"  # Specify the folder containing DOCX files
