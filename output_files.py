@@ -34,6 +34,7 @@ def convert_docx_to_pdf(docx_path, pdf_path):
         print(f"Error converting {docx_path} to PDF: {e}")
         return False
 
+
 def create_zip_from_pdfs(pdf_folder, zip_path):
     """Create a ZIP file containing all PDFs in the folder."""
     try:
@@ -44,18 +45,42 @@ def create_zip_from_pdfs(pdf_folder, zip_path):
                 for file in files:
                     if file.endswith('.pdf'):
                         file_path = os.path.join(root, file)
-                        # Make sure to add with the correct relative path inside the ZIP
+                        # Add with the correct relative path inside the ZIP
                         arcname = os.path.relpath(file_path, pdf_folder)
                         zipf.write(file_path, arcname)
                         print(f"Added {file} to ZIP archive.")
-        print(f"Created ZIP file successfully at: {zip_path}")
-        return True
+        
+        # Validate the ZIP file before returning
+        if validate_zip(zip_path):
+            print(f"ZIP file created successfully at: {zip_path}")
+            return True
+        else:
+            print(f"Error: The ZIP file {zip_path} seems to be corrupted.")
+            return False
     except Exception as e:
         print(f"Error creating ZIP file: {e}")
         return False
 
-from pathlib import Path
-from zipfile import ZipFile
+
+def validate_zip(zip_path):
+    """Validate the ZIP file integrity by checking its contents."""
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as zipf:
+            # Test the ZIP file integrity
+            corrupted_file = zipf.testzip()  # Returns None if all files are intact
+            if corrupted_file is None:
+                print("ZIP file is valid.")
+                return True
+            else:
+                print(f"Corrupted file in ZIP: {corrupted_file}")
+                return False
+    except zipfile.BadZipFile:
+        print(f"Error: The file {zip_path} is not a valid ZIP file.")
+        return False
+    except Exception as e:
+        print(f"Unexpected error while validating ZIP file: {e}")
+        return False
+
 
 def process_folder_and_create_zip(folder_path):
     """Process DOCX files in a folder and create a ZIP file containing them."""
@@ -70,17 +95,24 @@ def process_folder_and_create_zip(folder_path):
     # Step 2: Create a ZIP file containing all the DOCX files
     zip_file_path = folder_path / "docx_files.zip"
     try:
-        with ZipFile(zip_file_path, 'w') as zipf:
+        with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for docx_file in docx_files:
                 zipf.write(docx_file, arcname=docx_file.name)
-        print(f"ZIP file created at: {zip_file_path}")
-        return zip_file_path
+                print(f"Added {docx_file.name} to ZIP archive.")
+        
+        # Validate the ZIP file before returning
+        if validate_zip(zip_file_path):
+            print(f"ZIP file created successfully at: {zip_file_path}")
+            return zip_file_path
+        else:
+            print(f"Error: The ZIP file {zip_file_path} seems to be corrupted.")
+            return None
     except Exception as e:
         print(f"Failed to create ZIP file: {e}")
         return None
 
 
-# # Example usage:
+# Example usage:
 # folder_path = "/path/to/your/folder"  # Specify the folder containing DOCX files
 # zip_file = process_folder_and_create_zip(folder_path)
 # if zip_file:
