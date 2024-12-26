@@ -38,7 +38,7 @@ def convert_docx_to_pdf(docx_path, pdf_path):
 def create_zip_from_pdfs(pdf_folder, zip_path):
     """Create a ZIP file containing all PDFs in the folder."""
     try:
-        # Ensure the zip file is created and open it in write mode
+        # Ensure the zip file is created and open it in write mode (binary mode)
         print(f"Creating ZIP file at {zip_path}...")
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for root, dirs, files in os.walk(pdf_folder):
@@ -110,7 +110,6 @@ def process_folder_and_create_zip(folder_path):
     except Exception as e:
         print(f"Failed to create ZIP file: {e}")
         return None
-
 
 # Example usage:
 # folder_path = "/path/to/your/folder"  # Specify the folder containing DOCX files
