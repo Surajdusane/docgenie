@@ -109,4 +109,4 @@ async def convert_to_pdf_zip(folder_name: str):
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to DocGenie API"}
+    return {"ok"}
