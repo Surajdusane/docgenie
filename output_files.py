@@ -106,7 +106,7 @@ def process_folder_and_create_zip(folder_path):
     zip_file_path = folder_path / "pdf_files.zip"
     try:
         with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for pdf_file in pdf_folder.glob("*.pdf"):
+            for folder_path in pdf_folder.glob("*.docx"):
                 zipf.write(pdf_file, arcname=pdf_file.name)
                 print(f"Added {pdf_file.name} to ZIP archive.")
         
