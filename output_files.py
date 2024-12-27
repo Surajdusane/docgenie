@@ -83,7 +83,7 @@ def validate_zip(zip_path):
 
 
 def process_folder_and_create_zip(folder_path):
-    """Process DOCX files in a folder and create a ZIP file containing them."""
+    """Process DOCX files in a folder, convert them to PDFs, and create a ZIP file containing the PDFs."""
     folder_path = Path(folder_path)
 
     # Step 1: Collect all DOCX files in the folder
@@ -92,13 +92,23 @@ def process_folder_and_create_zip(folder_path):
         print("No DOCX files found in the folder. Exiting...")
         return None
 
-    # Step 2: Create a ZIP file containing all the DOCX files
-    zip_file_path = folder_path / "docx_files.zip"
+    # Step 2: Convert DOCX files to PDFs
+    pdf_folder = folder_path / "pdfs"
+    pdf_folder.mkdir(exist_ok=True)  # Create a folder to store the PDFs
+
+    for docx_file in docx_files:
+        pdf_file = pdf_folder / (docx_file.stem + ".pdf")
+        if not convert_docx_to_pdf(docx_file, pdf_file):
+            print(f"Failed to convert {docx_file.name} to PDF.")
+            return None  # Stop the process if any conversion fails
+
+    # Step 3: Create a ZIP file containing all the PDFs
+    zip_file_path = folder_path / "pdf_files.zip"
     try:
         with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for docx_file in docx_files:
-                zipf.write(docx_file, arcname=docx_file.name)
-                print(f"Added {docx_file.name} to ZIP archive.")
+            for pdf_file in pdf_folder.glob("*.pdf"):
+                zipf.write(pdf_file, arcname=pdf_file.name)
+                print(f"Added {pdf_file.name} to ZIP archive.")
         
         # Validate the ZIP file before returning
         if validate_zip(zip_file_path):
