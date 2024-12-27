@@ -81,9 +81,34 @@ def validate_zip(zip_path):
         print(f"Unexpected error while validating ZIP file: {e}")
         return False
 
+def create_zip_from_docx(docx_folder, zip_path):
+    """Create a ZIP file containing all DOCX files in the folder."""
+    try:
+        # Ensure the zip file is created and open it in write mode (binary mode)
+        print(f"Creating ZIP file at {zip_path}...")
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(docx_folder):
+                for file in files:
+                    if file.endswith('.docx'):
+                        file_path = os.path.join(root, file)
+                        # Add with the correct relative path inside the ZIP
+                        arcname = os.path.relpath(file_path, docx_folder)
+                        zipf.write(file_path, arcname)
+                        print(f"Added {file} to ZIP archive.")
+        
+        # Validate the ZIP file before returning
+        if validate_zip(zip_path):
+            print(f"ZIP file created successfully at: {zip_path}")
+            return zip_path
+        else:
+            print(f"Error: The ZIP file {zip_path} seems to be corrupted.")
+            return None
+    except Exception as e:
+        print(f"Error creating ZIP file: {e}")
+        return None
 
 def process_folder_and_create_zip(folder_path):
-    """Process DOCX files in a folder, convert them to PDFs, and create a ZIP file containing the PDFs."""
+    """Process DOCX files in a folder and create a ZIP file containing them."""
     folder_path = Path(folder_path)
 
     # Step 1: Collect all DOCX files in the folder
@@ -92,34 +117,49 @@ def process_folder_and_create_zip(folder_path):
         print("No DOCX files found in the folder. Exiting...")
         return None
 
-    # Step 2: Convert DOCX files to PDFs
-    pdf_folder = folder_path / "pdfs"
-    pdf_folder.mkdir(exist_ok=True)  # Create a folder to store the PDFs
+    # Step 2: Create a ZIP file containing all the DOCX files
+    zip_file_path = folder_path / "docx_files.zip"
+    
+    return create_zip_from_docx(folder_path, zip_file_path)
 
-    for docx_file in docx_files:
-        pdf_file = pdf_folder / (docx_file.stem + ".pdf")
-        if not convert_docx_to_pdf(docx_file, pdf_file):
-            print(f"Failed to convert {docx_file.name} to PDF.")
-            return None  # Stop the process if any conversion fails
+# def process_folder_and_create_zip(folder_path):
+#     """Process DOCX files in a folder, convert them to PDFs, and create a ZIP file containing the PDFs."""
+#     folder_path = Path(folder_path)
 
-    # Step 3: Create a ZIP file containing all the PDFs
-    zip_file_path = folder_path / "pdf_files.zip"
-    try:
-        with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for folder_path in pdf_folder.glob("*.docx"):
-                zipf.write(pdf_file, arcname=pdf_file.name)
-                print(f"Added {pdf_file.name} to ZIP archive.")
+#     # Step 1: Collect all DOCX files in the folder
+#     docx_files = list(folder_path.glob("*.docx"))
+#     if not docx_files:
+#         print("No DOCX files found in the folder. Exiting...")
+#         return None
+
+#     # Step 2: Convert DOCX files to PDFs
+#     pdf_folder = folder_path / "pdfs"
+#     pdf_folder.mkdir(exist_ok=True)  # Create a folder to store the PDFs
+
+#     for docx_file in docx_files:
+#         pdf_file = pdf_folder / (docx_file.stem + ".pdf")
+#         if not convert_docx_to_pdf(docx_file, pdf_file):
+#             print(f"Failed to convert {docx_file.name} to PDF.")
+#             return None  # Stop the process if any conversion fails
+
+#     # Step 3: Create a ZIP file containing all the PDFs
+#     zip_file_path = folder_path / "pdf_files.zip"
+#     try:
+#         with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+#             for folder_path in pdf_folder.glob("*.docx"):
+#                 zipf.write(pdf_file, arcname=pdf_file.name)
+#                 print(f"Added {pdf_file.name} to ZIP archive.")
         
-        # Validate the ZIP file before returning
-        if validate_zip(zip_file_path):
-            print(f"ZIP file created successfully at: {zip_file_path}")
-            return zip_file_path
-        else:
-            print(f"Error: The ZIP file {zip_file_path} seems to be corrupted.")
-            return None
-    except Exception as e:
-        print(f"Failed to create ZIP file: {e}")
-        return None
+#         # Validate the ZIP file before returning
+#         if validate_zip(zip_file_path):
+#             print(f"ZIP file created successfully at: {zip_file_path}")
+#             return zip_file_path
+#         else:
+#             print(f"Error: The ZIP file {zip_file_path} seems to be corrupted.")
+#             return None
+#     except Exception as e:
+#         print(f"Failed to create ZIP file: {e}")
+#         return None
 
 # Example usage:
 # folder_path = "/path/to/your/folder"  # Specify the folder containing DOCX files
